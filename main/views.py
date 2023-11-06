@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from linebot import LineBotApi, WebhookHandler,WebhookParser
 from linebot.exceptions import InvalidSignatureError,LineBotApiError
-from linebot.models import MessageEvent,TextSendMessage
+from linebot.models import MessageEvent,TextSendMessage,ImageSendMessage
 
 line_bot_api = LineBotApi(settings.LINE_CHANNEL_ACCESS_TOKEN)
 parse=WebhookParser(settings.LINE_CHANNEL_SECRET)
@@ -29,13 +29,31 @@ def callback(request):
         
         for event in events:
             if isinstance(event,MessageEvent):
-                
-                #if event.message.text=='hello':
-                    line_bot_api.reply_message(
-                        event.reply_token,
-                        #TextSendMessage(text='hello world')
-                        TextSendMessage(text=event.message.text)
+                message=event.message.text
+                message_object=None
+
+                if message=='你來了':
+                    message_object=TextSendMessage(text='我來了')
+                elif "樂透" in message:
+                    reply_message='預測號碼為:\n'+get_lottory_number()
+                    message_object=TextSendMessage(text=reply_message)
+                elif "捷運" in message:
+                    if "台中" in message:
+                        image_url="https://assets.piliapp.com/s3pxy/mrt_taiwan/taichung/20201112_zh.png?v=2"
+                    if "高雄" in message:
+                        image_url="https://upload.wikimedia.org/wikipedia/commons/5/56/%E9%AB%98%E9%9B%84%E6%8D%B7%E9%81%8B%E8%B7%AF%E7%B6%B2%E5%9C%96_%282020%29.png"
+                    else:
+                        image_url='https://assets.piliapp.com/s3pxy/mrt_taiwan/taipei/20230214_zh.png'
+                    message_object=ImageSendMessage(
+                        original_content_url=image_url, preview_image_url=image_url
                     )
+                    
+                else:
+                    message_object=TextSendMessage('0.0??')
+                line_bot_api.reply_message(
+                    event.reply_token,
+                    message_object,
+                )
         return HttpResponse()
     else:
         return HttpResponseBadRequest()
@@ -51,6 +69,9 @@ def get_books(request):
 def index(request):
     now=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     return HttpResponse(f'<h1>現在時刻:{now}</h1>')
+
+def get_lottory_number():
+    pass
 
 def lottory(request):
     numbers=sorted(random.sample(range(1,49),6))
