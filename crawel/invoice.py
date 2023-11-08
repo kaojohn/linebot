@@ -11,7 +11,7 @@ def get_invoice_numbers():
         datas = [[td.text.strip() for td in tr.find_all("td")] for tr in trs[1:4]]
         numbers = []
         for data in datas:
-            print(data[1].split()[:-1])
+            # print(data[1].split()[:-1])
             numbers += data[1].split()[:-1]
     except Exception as e:
         print(e)

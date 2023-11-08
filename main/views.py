@@ -17,11 +17,12 @@ from crawel.invoice import get_invoice_numbers, search_invoice_bingo
 line_bot_api = LineBotApi(settings.LINE_CHANNEL_ACCESS_TOKEN)
 parse = WebhookParser(settings.LINE_CHANNEL_SECRET)
 start_invoice = False
+numbers = []
 
 
 @csrf_exempt
 def callback(request):
-    global start_invoice
+    global start_invoice, numbers
     if request.method == "POST":
         signature = request.META["HTTP_X_LINE_SIGNATURE"]
         body = request.body.decode("utf-8")
@@ -37,11 +38,12 @@ def callback(request):
                 message = event.message.text
                 message_object = None
                 if start_invoice:
-                    if meaaage == "0":
+                    if message == "0":
                         start_invoice = False
                         message_text = "離開兌獎模式"
                     else:
-                        message_text = "進入兌獎模式(0:out!)"
+                        message_text = search_invoice_bingo(message, numbers)
+                        message_text += "\n請輸入下一組號碼<兌獎模式啟動中>(0:關閉)"
 
                     message_object = TextSendMessage(text=message_text)
 
