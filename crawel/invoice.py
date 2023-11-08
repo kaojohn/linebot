@@ -1,4 +1,29 @@
-from tools import get_soup
+import requests
+from bs4 import BeautifulSoup
+
+
+def get_soup(url, post_data=None):
+    # 新增使用者代理模式
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"
+    }
+    try:
+        if post_data is not None:
+            resp = requests.post(url, post_data, headers=headers)
+        else:
+            resp = requests.get(url, headers=headers)
+        resp.encoding = "utf-8"
+        print(resp.status_code)
+        if resp.status_code == 200:
+            # 取得soup物件
+            soup = BeautifulSoup(resp.text, "lxml")
+            return soup
+        else:
+            print("取得網頁失敗", resp.status_code)
+    except Exception as e:
+        print(e)
+    # 失敗則回傳None
+    return None
 
 
 # 爬找發票
